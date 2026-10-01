@@ -1,0 +1,33 @@
+name: Run Telegram Bot
+
+on:
+  schedule:
+    # Har 6 ghante mein naya run shuru hota hai. Purana run apne aap
+    # ~5 ghante 50 min par khud ruk jaata hai (neeche timeout-minutes dekho),
+    # taaki dono runs overlap na karein (overlap hone par Telegram
+    # "Conflict" error deta hai, kyunki ek hi bot token do jagah poll
+    # nahi ho sakta).
+    - cron: '0 */6 * * *'
+  workflow_dispatch:   # "Run workflow" button se manually bhi chala sakte ho
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # GitHub ka hard limit 360 min (6 ghante) hai per job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: python url_downloader_bot.py
